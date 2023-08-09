@@ -1,0 +1,15 @@
+version: "2"
+project:
+    id: ""
+sql:
+  - engine: "postgresql"
+    queries: "db/query/"
+    schema: "db/migration/"
+    gen:
+      go:
+        package: "db"
+        out: "db/sqlc"
+overrides:
+    go: null
+plugins: []
+rules: []
