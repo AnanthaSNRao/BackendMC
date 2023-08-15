@@ -14,8 +14,8 @@ import (
 type createUserRequest struct {
 	Username string `json:"username" binding:"required,alphanum"`
 	Password string `json:"password" binding:"required,min=6"`
-	FullName string `json:"fullname", binding:"required,min=6"`
-	Email    string `json:"Email",  binding:"required,email"`
+	FullName string `json:"full_name" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
 }
 
 type createUserResponse struct {
@@ -71,7 +71,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 }
 
 type getUserParams struct {
-	username string `uri:"username" Username string binding:"required, alphanum"`
+	username string `uri:"username" binding:"required, alphanum"`
 }
 
 func (server *Server) GetUsers(ctx *gin.Context) {
