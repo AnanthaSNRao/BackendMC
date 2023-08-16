@@ -186,7 +186,7 @@ func TestGetUserApi(t *testing.T) {
 			store := mockdb.NewMockStore(crtl)
 			tc.buildStub(store)
 
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			recoder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/users")
