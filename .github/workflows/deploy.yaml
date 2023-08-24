@@ -54,7 +54,7 @@ jobs:
     - name: deploying to eks
       run: |
         kubectl config view
-        kubectl get pods
+        cat ~/.aws/credentials
         # kubectl apply -f eks/aws-auth.yaml
         # kubectl apply -f eks/deployment.yaml
         # kubectl apply -f eks/service.yaml
