@@ -11,7 +11,7 @@ permissions:
 jobs:
 
   build:
-    name: build Image
+    name: Deploy Image
     runs-on: ubuntu-latest
 
     steps:
@@ -29,7 +29,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
       with:
         mask-password: 'true'
-        
+
     - name: Load secrets and save to app.env
       run: aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' > app.env
 
@@ -39,5 +39,21 @@ jobs:
         REPOSITORY: simplebank
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-        docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
+        docker push -a $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+    - name: Kubectl configuration
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.21.2' 
+      id: install
+
+    - name: configure the kubeconfig 
+      run: aws eks update-kubeconfig --name simple-bank --region us-west-1
+
+    - name: deploying to eks
+      run: |
+        kubectl -f apply eks/aws-awth.yaml
+        kubectl -f apply eks/deployment.yaml
+        kubectl -f apply eks/service.yaml
+
