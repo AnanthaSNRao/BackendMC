@@ -53,7 +53,7 @@ jobs:
 
     - name: deploying to eks
       run: |
-        kubectl -f apply eks/aws-awth.yaml
-        kubectl -f apply eks/deployment.yaml
-        kubectl -f apply eks/service.yaml
+        kubectl apply -f eks/aws-auth.yaml
+        kubectl apply -f eks/deployment.yaml
+        kubectl apply -f eks/service.yaml
 
