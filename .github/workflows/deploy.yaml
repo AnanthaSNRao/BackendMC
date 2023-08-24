@@ -53,7 +53,6 @@ jobs:
 
     - name: deploying to eks
       run: |
-        kubectl config use-context arn:aws:eks:us-west-1:413792004217:cluster/simple-bank
         kubectl apply -f eks/aws-auth.yaml
         kubectl apply -f eks/deployment.yaml
         kubectl apply -f eks/service.yaml
