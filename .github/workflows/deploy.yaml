@@ -49,12 +49,11 @@ jobs:
       id: install
 
     - name: configure the kubeconfig 
-      run: aws eks update-kubeconfig --name simple-bank --region us-west-1
+      run: aws eks update-kubeconfig --name simple-bank --region us-west-1  --role-arn arn:aws:iam::413792004217:role/deployement
 
     - name: deploying to eks
       run: |
         kubectl config view
-        cat ~/.aws/credentials
         # kubectl apply -f eks/aws-auth.yaml
         # kubectl apply -f eks/deployment.yaml
         # kubectl apply -f eks/service.yaml
