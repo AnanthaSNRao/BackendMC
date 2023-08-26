@@ -48,6 +48,13 @@ jobs:
         version: 'v1.28.1' 
       id: install
 
+    - name: Configure AWS credentials for EKS
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-1
+  
     - name: configure the kubeconfig 
       run: aws eks update-kubeconfig --name simple-bank --region us-west-1 
 
