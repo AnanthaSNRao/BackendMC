@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 	db "github.com/myGo/simplebank/db/sqlc"
 	"github.com/myGo/simplebank/util"
@@ -130,8 +131,12 @@ type loginUserRequest struct {
 }
 
 type loginUserResponse struct {
-	AccessToken string       `json:"accessToken"`
-	User        userResponse `json:"userResponse"`
+	SessionID            uuid.UUID    `json:"sessionId"`
+	AccessToken          string       `json:"accessToken"`
+	AccessTokenExpriseAt time.Time    `json:"accessTokenExpiresAt"`
+	User                 userResponse `json:"userResponse"`
+	RefeshToken          string       `json:"refreshToken"`
+	RefeshTokenExpriseAt time.Time    `json:"refreshTokenExpiresAt"`
 }
 
 func (server *Server) loginUser(ctx *gin.Context) {
@@ -158,15 +163,44 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := server.tokenMaker.CreateToken(req.Username, server.config.AccessTokenDuration)
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(req.Username, server.config.AccessTokenDuration)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	refeshToken, refeshPayload, err := server.tokenMaker.CreateToken(
+		user.Username,
+		server.config.RefreshTokentDuration,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
+		ID:           refeshPayload.ID,
+		Username:     refeshPayload.Username,
+		RefreshToken: refeshToken,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		IsBlocked:    false,
+		ExpiredAt:    refeshPayload.ExpriedAt,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	rsp := loginUserResponse{
-		AccessToken: accessToken,
-		User:        newUserResponse(user),
+		SessionID:            session.ID,
+		AccessTokenExpriseAt: accessPayload.ExpriedAt,
+		RefeshToken:          refeshToken,
+		RefeshTokenExpriseAt: refeshPayload.ExpriedAt,
+		AccessToken:          accessToken,
+		User:                 newUserResponse(user),
 	}
 	ctx.JSON(http.StatusOK, rsp)
 	return
