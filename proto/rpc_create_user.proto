@@ -11,7 +11,7 @@ message CreateUserRequest {
     string username = 1;
     string fullName = 2;
 	string email = 3;
-	string passwaord = 4;
+	string password = 4;
 }
 
 message CreateUserResponse {

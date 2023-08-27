@@ -10,7 +10,7 @@ option go_package = "github.com/myGo/simplebank/pb";
 
 message LoginUserRequest {
     string username = 1;
-	string passwaord = 2;
+	string password = 2;
 }
 
 message LoginUserResponse {
