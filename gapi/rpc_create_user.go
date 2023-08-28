@@ -7,12 +7,16 @@ import (
 	db "github.com/myGo/simplebank/db/sqlc"
 	"github.com/myGo/simplebank/pb"
 	"github.com/myGo/simplebank/util"
+	"github.com/myGo/simplebank/validate"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-
+	if violations := validateCreateUserRequest(req); violations != nil {
+		return nil, InvalidArgumentError(violations)
+	}
 	hashedPassword, err := util.HashedPassword(req.Password)
 
 	if err != nil {
@@ -43,4 +47,23 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	}
 	return resposnse, nil
 
+}
+
+func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if err := validate.ValidateUsername(req.Username); err != nil {
+		violations = append(violations, FieldViolation(err))
+	}
+
+	if err := validate.ValidateFullName(req.FullName); err != nil {
+		violations = append(violations, FieldViolation(err))
+	}
+
+	if err := validate.ValidateEmail(req.Email); err != nil {
+		violations = append(violations, FieldViolation(err))
+	}
+
+	if err := validate.ValidatePassword(req.Password); err != nil {
+		violations = append(violations, FieldViolation(err))
+	}
+	return violations
 }

@@ -7,12 +7,18 @@ import (
 	db "github.com/myGo/simplebank/db/sqlc"
 	pb "github.com/myGo/simplebank/pb"
 	"github.com/myGo/simplebank/util"
+	"github.com/myGo/simplebank/validate"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.LoginUserResponse, error) {
+
+	if violations := validateLoginUserRequest(req); violations != nil {
+		return nil, InvalidArgumentError(violations)
+	}
 
 	user, err := server.store.GetUsers(ctx, req.Username)
 
@@ -67,4 +73,15 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		RefreshTokenExpriseAt: timestamppb.New(refeshPayload.ExpriedAt),
 	}
 	return rsp, nil
+}
+
+func validateLoginUserRequest(req *pb.LoginUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if err := validate.ValidateUsername(req.Username); err != nil {
+		violations = append(violations, FieldViolation(err))
+	}
+
+	if err := validate.ValidatePassword(req.Password); err != nil {
+		violations = append(violations, FieldViolation(err))
+	}
+	return violations
 }
