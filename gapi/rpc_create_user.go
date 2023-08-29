@@ -50,20 +50,20 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 }
 
 func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
-	if err := validate.ValidateUsername(req.Username); err != nil {
-		violations = append(violations, FieldViolation(err))
+	if err := validate.ValidateUsername(req.GetUsername()); err != nil {
+		violations = append(violations, FieldViolation("username", err))
 	}
 
-	if err := validate.ValidateFullName(req.FullName); err != nil {
-		violations = append(violations, FieldViolation(err))
+	if err := validate.ValidateFullName(req.GetFullName()); err != nil {
+		violations = append(violations, FieldViolation("Fullname", err))
 	}
 
-	if err := validate.ValidateEmail(req.Email); err != nil {
-		violations = append(violations, FieldViolation(err))
+	if err := validate.ValidateEmail(req.GetEmail()); err != nil {
+		violations = append(violations, FieldViolation("Email", err))
 	}
 
-	if err := validate.ValidatePassword(req.Password); err != nil {
-		violations = append(violations, FieldViolation(err))
+	if err := validate.ValidatePassword(req.GetPassword()); err != nil {
+		violations = append(violations, FieldViolation("Password", err))
 	}
 	return violations
 }
