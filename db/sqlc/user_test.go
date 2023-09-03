@@ -2,11 +2,11 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/myGo/simplebank/util"
 	"github.com/stretchr/testify/require"
 )
@@ -22,7 +22,7 @@ func createRandomUser(t *testing.T) User {
 		Email:          util.RandomEmail(),
 	}
 
-	user, err := testQueries.CreateUser(context.Background(), arg)
+	user, err := testStore.CreateUser(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
 	fmt.Print(user)
@@ -43,7 +43,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	user1 := createRandomUser(t)
-	user2, err := testQueries.GetUsers(context.Background(), user1.Username)
+	user2, err := testStore.GetUsers(context.Background(), user1.Username)
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
 
@@ -62,11 +62,11 @@ func TestUpdateUserOnlyPassword(t *testing.T) {
 	require.NoError(t, err)
 
 	arg := UpdateUserParams{
-		HashedPassword: sql.NullString{String: hp, Valid: true},
+		HashedPassword: pgtype.Text{String: hp, Valid: true},
 		Username:       oldUser.Username,
 	}
 
-	updatedUser, err := testQueries.UpdateUser(context.Background(), arg)
+	updatedUser, err := testStore.UpdateUser(context.Background(), arg)
 
 	require.NoError(t, err)
 	require.NotZero(t, updatedUser)
@@ -81,11 +81,11 @@ func TestUpdateUserOnlyFullName(t *testing.T) {
 	newFullName := util.RandomOwner()
 
 	arg := UpdateUserParams{
-		FullName: sql.NullString{String: newFullName, Valid: true},
+		FullName: pgtype.Text{String: newFullName, Valid: true},
 		Username: oldUser.Username,
 	}
 
-	updatedUser, err := testQueries.UpdateUser(context.Background(), arg)
+	updatedUser, err := testStore.UpdateUser(context.Background(), arg)
 
 	require.NoError(t, err)
 	require.NotZero(t, updatedUser)
@@ -100,11 +100,11 @@ func TestUpdateUserOnlyEmail(t *testing.T) {
 	newEmail := util.RandomEmail()
 
 	arg := UpdateUserParams{
-		Email:    sql.NullString{String: newEmail, Valid: true},
+		Email:    pgtype.Text{String: newEmail, Valid: true},
 		Username: oldUser.Username,
 	}
 
-	updatedUser, err := testQueries.UpdateUser(context.Background(), arg)
+	updatedUser, err := testStore.UpdateUser(context.Background(), arg)
 
 	require.NoError(t, err)
 	require.NotZero(t, updatedUser)

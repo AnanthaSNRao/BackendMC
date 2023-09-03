@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"net"
 	"net/http"
 	"os"
@@ -15,7 +14,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/myGo/simplebank/api"
 	db "github.com/myGo/simplebank/db/sqlc"
 	_ "github.com/myGo/simplebank/doc/statik"
@@ -37,10 +37,10 @@ func main() {
 	if err != nil {
 		log.Fatal().Msg("cannot load config")
 	}
-	dbDriver := config.DBDriver
+	// dbDriver := config.DBDriver
 	dbSource := config.DBSource
 
-	conn, err := sql.Open(dbDriver, dbSource)
+	conn, err := pgxpool.New(context.Background(), dbSource)
 	if err != nil {
 		log.Fatal().Msg("cannot load config")
 	}

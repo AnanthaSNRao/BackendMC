@@ -2,11 +2,12 @@ package worker
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/hibiken/asynq"
+	db "github.com/myGo/simplebank/db/sqlc"
 	"github.com/rs/zerolog/log"
 )
 
@@ -44,7 +45,7 @@ func (processor *RedisTaskProcessor) ProcessTaskSendverifyEmail(ctx context.Cont
 	user, err := processor.store.GetUsers(ctx, payload.Username)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			return fmt.Errorf("failed to get user: %w ", asynq.SkipRetry)
 		}
 		return fmt.Errorf("failed to get user: %w ", err)

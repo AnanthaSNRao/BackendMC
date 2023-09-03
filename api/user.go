@@ -1,12 +1,13 @@
 package api
 
 import (
-	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/lib/pq"
 	db "github.com/myGo/simplebank/db/sqlc"
 	"github.com/myGo/simplebank/util"
@@ -88,7 +89,7 @@ func (server *Server) GetUsers(ctx *gin.Context) {
 	user, err := server.store.GetUsers(ctx, req.username)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -148,7 +149,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	user, err := server.store.GetUsers(ctx, req.Username)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -186,7 +187,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		UserAgent:    ctx.Request.UserAgent(),
 		ClientIp:     ctx.ClientIP(),
 		IsBlocked:    false,
-		ExpiredAt:    refeshPayload.ExpriedAt,
+		ExpiredAt:    pgtype.Timestamp{Time: refeshPayload.ExpriedAt},
 	})
 
 	if err != nil {

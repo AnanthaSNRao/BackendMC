@@ -1,12 +1,13 @@
 package api
 
 import (
-	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	db "github.com/myGo/simplebank/db/sqlc"
 )
 
 type renewAccessTokenRequest struct {
@@ -37,7 +38,7 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 
 	if err != nil {
 
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			fmt.Println("no session")
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
@@ -67,7 +68,7 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	if time.Now().After(session.ExpiredAt) {
+	if time.Now().After(session.ExpiredAt.Time) {
 		err := fmt.Errorf("session expried")
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return

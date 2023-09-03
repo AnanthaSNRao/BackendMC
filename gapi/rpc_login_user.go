@@ -2,8 +2,9 @@ package gapi
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/myGo/simplebank/db/sqlc"
 	pb "github.com/myGo/simplebank/pb"
 	"github.com/myGo/simplebank/util"
@@ -23,7 +24,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 	user, err := server.store.GetUsers(ctx, req.Username)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			return nil, status.Errorf(codes.NotFound, "no user found in database: %s", err)
 		}
 		return nil, status.Errorf(codes.Internal, "can not login the user: %s", err)
@@ -57,7 +58,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		UserAgent:    mtdt.UserAgent,
 		ClientIp:     mtdt.ClientIP,
 		IsBlocked:    false,
-		ExpiredAt:    refeshPayload.ExpriedAt,
+		ExpiredAt:    pgtype.Timestamp{Time: refeshPayload.ExpriedAt},
 	})
 
 	if err != nil {
