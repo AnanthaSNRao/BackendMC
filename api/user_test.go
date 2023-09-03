@@ -13,7 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
-	"github.com/lib/pq"
+
 	mockdb "github.com/myGo/simplebank/db/mock"
 	db "github.com/myGo/simplebank/db/sqlc"
 	"github.com/myGo/simplebank/util"
@@ -113,7 +113,7 @@ func TestGetUserApi(t *testing.T) {
 				store.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(db.User{}, &pq.Error{Code: "23505"})
+					Return(db.User{}, db.ErrUniqueViolation)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusForbidden, recorder.Code)
